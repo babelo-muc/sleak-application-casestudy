@@ -121,33 +121,78 @@ const owners: Owner[] = [
 
 // Generate more mock recordings for pagination demo
 const generateMockRecordings = (): Recording[] => {
+    // realistic filenames an SDR might upload (underscore or hyphen separated, with date or descriptor)
+    const inboundNames = [
+        'acme_corp_sdr_call_2025-01-15.mp3',
+        'techstart_discovery_call_2025-02-02.mp3',
+        'cloudsync_intro_call_2025-03-07.mp3',
+        'megacorp_q1_checkin_2025-04-12.mp3',
+        'startupxyz_onboarding_checkin_2025-05-20.mp3',
+    ]
+
+    const outboundNames = [
+        'newventure_cold_outreach_jlee_2025-06-03.mp3',
+        'dataflow_initial_call_2025-06-14.mp3',
+        'prospect_intro_call_mike_2025-07-01.mp3',
+        'apexsystems_outbound_request_2025-07-21.mp3',
+        'startup_followup_call_2025-08-02.mp3',
+    ]
+
+    const followUpNames = [
+        'innovate_labs_followup_qna_2025-01-20.mp3',
+        'acmecorp_post_call_followup_2025-02-18.mp3',
+        'apexsystems_post_negotiation_followup_2025-03-05.mp3',
+    ]
+
+    const inboundDurations = ['22:14', '32:45', '45:12', '28:00', '38:22']
+    const outboundDurations = ['05:20', '08:45', '12:05', '15:00', '06:30']
+    const followUpDurations = ['09:40', '11:15', '14:30', '18:05']
+
     const baseRecordings = [
-        { name: 'Enterprise Demo - Acme Corp', callType: 'Inbound' as const, status: 'completed' as const },
-        { name: 'Discovery Call - TechStart Inc', callType: 'Inbound' as const, status: 'completed' as const },
-        { name: 'Pricing Discussion - Global Solutions', callType: 'Inbound' as const, status: 'processing' as const },
-        { name: 'Follow-up Call - Innovate Labs', callType: 'Follow-Up' as const, status: 'completed' as const },
-        { name: 'Initial Outreach - DataFlow', callType: 'Outbound' as const, status: 'error' as const },
-        { name: 'Product Demo - CloudSync', callType: 'Inbound' as const, status: 'completed' as const },
-        { name: 'Negotiation Call - Apex Systems', callType: 'Inbound' as const, status: 'completed' as const },
-        { name: 'Onboarding Review - StartupXYZ', callType: 'Inbound' as const, status: 'completed' as const },
-        { name: 'Quarterly Review - MegaCorp', callType: 'Inbound' as const, status: 'processing' as const },
-        { name: 'Cold Outreach - NewVenture', callType: 'Outbound' as const, status: 'completed' as const },
+        { callType: 'Inbound' as const, status: 'completed' as const },
+        { callType: 'Inbound' as const, status: 'completed' as const },
+        { callType: 'Inbound' as const, status: 'processing' as const },
+        { callType: 'Follow-Up' as const, status: 'completed' as const },
+        { callType: 'Outbound' as const, status: 'error' as const },
+        { callType: 'Inbound' as const, status: 'completed' as const },
+        { callType: 'Inbound' as const, status: 'completed' as const },
+        { callType: 'Inbound' as const, status: 'completed' as const },
+        { callType: 'Inbound' as const, status: 'processing' as const },
+        { callType: 'Outbound' as const, status: 'completed' as const },
     ]
 
     const recordings: Recording[] = []
-    const durations = ['12:20', '18:55', '25:30', '32:45', '45:12', '28:00', '15:45', '38:22', '22:10', '55:00']
 
     for (let i = 0; i < 48; i++) {
         const base = baseRecordings[i % baseRecordings.length]
         const date = new Date()
         date.setDate(date.getDate() - i)
 
+        // pick name and duration arrays based on call type
+        let namePool: string[] = inboundNames
+        let durationPool: string[] = inboundDurations
+
+        if (base.callType === 'Outbound') {
+            namePool = outboundNames
+            durationPool = outboundDurations
+        } else if (base.callType === 'Follow-Up') {
+            namePool = followUpNames
+            durationPool = followUpDurations
+        }
+
+        const nameTemplate = namePool[i % namePool.length]
+        const duration = durationPool[i % durationPool.length]
+
+        // for variety, append a suffix for items after the first cycle
+        const cycle = Math.floor(i / namePool.length) + 1
+        const name = cycle === 1 ? nameTemplate : nameTemplate.replace('.mp3', `_${cycle}.mp3`)
+
         recordings.push({
             id: String(i + 1),
-            name: i < 10 ? base.name : `${base.name} #${Math.floor(i / 10) + 1}`,
+            name,
             date: date.toISOString().split('T')[0],
             status: base.status,
-            duration: durations[i % durations.length],
+            duration,
             owner: owners[i % owners.length],
             callType: base.callType,
         })
@@ -338,8 +383,8 @@ export const mockCoachingSession: CoachingSession = {
     metrics: {
         talkRatio: 42,
         wordsPerMinute: 145,
-        longestMonologue: '2m 15s',
-        longestMonologueSeconds: 135,
+        longestMonologue: '34s',
+        longestMonologueSeconds: 34,
         questionScore: 7,
         openQuestions: 5,
         closedQuestions: 2,
