@@ -41,6 +41,23 @@
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
     --radius-xl: calc(var(--radius) + 4px);
+
+    /* Lovable semantic colors (HSL tokens mapped into Tailwind v4) */
+    --color-topic-objection: hsl(var(--topic-objection));
+    --color-topic-discovery: hsl(var(--topic-discovery));
+    --color-topic-next-steps: hsl(var(--topic-next-steps));
+
+    --color-speaker-me: hsl(var(--speaker-me));
+    --color-speaker-me-light: hsl(var(--speaker-me-light));
+    --color-speaker-prospect: hsl(var(--speaker-prospect));
+    --color-speaker-prospect-light: hsl(var(--speaker-prospect-light));
+
+    --color-status-processing: hsl(var(--status-processing));
+    --color-status-processing-text: hsl(var(--status-processing-text));
+    --color-status-completed: hsl(var(--status-completed));
+    --color-status-completed-text: hsl(var(--status-completed-text));
+    --color-status-error: hsl(var(--status-error));
+    --color-status-error-text: hsl(var(--status-error-text));
 }
 
 :root {
@@ -76,6 +93,26 @@
     --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
     --sidebar-border: oklch(0.92 0.004 286.32);
     --sidebar-ring: oklch(0.705 0.015 286.067);
+
+    /* Lovable semantic tokens (store as HSL triplets) */
+    --status-processing: 48 96% 89%;
+    --status-processing-text: 32 95% 30%;
+    --status-completed: 142 76% 90%;
+    --status-completed-text: 142 72% 25%;
+    --status-error: 0 93% 94%;
+    --status-error-text: 0 84% 40%;
+
+    --speaker-me: 221 83% 53%;
+    --speaker-me-light: 221 83% 95%;
+    --speaker-prospect: 220 9% 75%;
+    --speaker-prospect-light: 220 9% 95%;
+
+    --topic-objection: 0 84% 60%;
+    --topic-objection-light: 0 93% 94%;
+    --topic-discovery: 45 93% 47%;
+    --topic-discovery-light: 48 96% 89%;
+    --topic-next-steps: 142 72% 45%;
+    --topic-next-steps-light: 142 76% 90%;
 }
 
 .dark {
@@ -110,6 +147,19 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.552 0.016 285.938);
+
+    /* Lovable semantic tokens - dark */
+    --speaker-me: 221 83% 60%;
+    --speaker-me-light: 221 50% 25%;
+    --speaker-prospect: 220 9% 55%;
+    --speaker-prospect-light: 220 15% 25%;
+
+    --topic-objection: 0 70% 50%;
+    --topic-objection-light: 0 50% 20%;
+    --topic-discovery: 45 80% 50%;
+    --topic-discovery-light: 45 50% 20%;
+    --topic-next-steps: 142 60% 45%;
+    --topic-next-steps-light: 142 40% 20%;
 }
 
 @layer base {
@@ -118,5 +168,25 @@
     }
     body {
         @apply bg-background text-foreground;
+    }
+}
+
+@layer components {
+    .card-elevated {
+        @apply bg-card rounded-xl border border-border/50 shadow-sm;
+    }
+
+    .waveform-bar {
+        @apply rounded-full transition-all duration-150;
+        background-color: hsl(var(--muted-foreground) / 0.3);
+    }
+
+    .waveform-bar.active {
+        @apply bg-primary;
+    }
+
+    .transcript-line-active {
+        background-color: hsl(var(--speaker-me-light));
+        border-left: 2px solid hsl(var(--speaker-me));
     }
 }
