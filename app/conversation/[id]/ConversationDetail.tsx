@@ -9,6 +9,7 @@ import { ContextualCoach } from '@/components/coaching/ContextualCoach';
 import { GoalBanner } from '@/components/coaching/GoalBanner';
 import { GoalTracker } from '@/components/coaching/GoalTracker';
 import { mockCoachingSession } from '@/data/mockData';
+import { redirect } from 'next/navigation';
 
 export default function ConversationDetail() {
   const session = mockCoachingSession;
@@ -33,7 +34,7 @@ export default function ConversationDetail() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/')}
+            onClick={() => redirect('/')}
             className="mb-2 -ml-2 text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
