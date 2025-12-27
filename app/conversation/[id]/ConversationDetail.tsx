@@ -14,6 +14,44 @@ import { MetricsDashboard } from '@/components/coaching/MetricsDashboard'
 export default function ConversationDetail() {
     const session = mockCoachingSession
 
+    const insights = session.transcript
+        .map((line, i, arr) => {
+            if (!line.insight) return null
+            const end = line.endSeconds ?? arr[i + 1]?.startSeconds ?? session.durationSeconds
+            return {
+                startSeconds: line.startSeconds,
+                endSeconds: end,
+                assessment: line.insight.assessment,
+                tryThisInstead: line.insight.tryThisInstead,
+                text: line.text,
+            }
+        })
+        .filter(Boolean) as Array<{
+        startSeconds: number
+        endSeconds: number
+        assessment: string
+        tryThisInstead: string
+        text: string
+    }>
+
+    const objections = session.transcript
+        .filter((line) => line.objection)
+        .map((line) => ({
+            ...line.objection!,
+            timestampSeconds: line.startSeconds,
+        }))
+
+    const segments = session.transcript.map((line, i, arr) => ({
+        startSeconds: line.startSeconds,
+        endSeconds: line.endSeconds ?? arr[i + 1]?.startSeconds ?? session.durationSeconds,
+        speaker: line.speaker,
+        topic: (line.highlightType === 'signal' ? 'next-steps' : (line.highlightType as any)) || undefined,
+    }))
+
+    const pins = session.transcript
+        .filter((line) => line.pin)
+        .map((line) => ({ timestampSeconds: line.startSeconds, type: line.pin!.type, label: line.pin!.label }))
+
     const [currentTime, setCurrentTime] = useState(0)
     const [isPlaying, setIsPlaying] = useState(false)
     const [isCoachingMode, setIsCoachingMode] = useState(true)
@@ -81,9 +119,9 @@ export default function ConversationDetail() {
             <GameTapePlayer
                 audioUrl={session.audioUrl}
                 durationSeconds={session.durationSeconds}
-                segments={session.timelineSegments}
+                segments={segments}
                 transcript={session.transcript}
-                pins={session.timelinePins}
+                pins={pins}
                 currentTime={currentTime}
                 onTimeChange={setCurrentTime}
                 isPlaying={isPlaying}
@@ -97,8 +135,8 @@ export default function ConversationDetail() {
             <div className="grid gap-4 lg:grid-cols-[60%_40%]" style={{ minHeight: '480px' }}>
                 <InteractiveTranscript transcript={session.transcript} currentTime={currentTime} onSeek={handleSeek} />
                 <ContextualCoach
-                    insights={session.insights}
-                    objections={session.objections}
+                    insights={insights}
+                    objections={objections}
                     currentTime={currentTime}
                     onSeek={handleSeek}
                 />

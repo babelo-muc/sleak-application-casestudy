@@ -18,9 +18,26 @@ export interface TranscriptLine {
     speaker: 'Me' | 'Prospect'
     text: string
     timestamp: string
-    timestampSeconds: number
+    // numeric start timestamp in seconds
+    startSeconds: number
+    // optional explicit end timestamp in seconds; if omitted consumers may use the next line's startSeconds
+    endSeconds?: number
     highlightType?: 'objection' | 'signal' | 'discovery' | 'next-steps'
     note?: string
+    insight?: {
+        // assessment can be good/neutral/bad and replaces previous "critique"
+        assessment: string
+        tryThisInstead: string
+    }
+    objection?: {
+        id: string
+        label: string
+        quote: string
+    }
+    pin?: {
+        type: 'missed-opportunity' | 'weak-question' | 'strong-pivot'
+        label: string
+    }
 }
 
 export interface FeedbackItem {
@@ -42,11 +59,11 @@ export interface TimelinePin {
 }
 
 export interface CoachingInsight {
-    timestampSeconds: number
+    startSeconds: number
     endSeconds: number
-    whatYouSaid: string
-    critique: string
+    assessment: string
     tryThisInstead: string
+    text?: string
 }
 
 export interface Objection {
@@ -54,16 +71,6 @@ export interface Objection {
     timestampSeconds: number
     label: string
     quote: string
-}
-
-export interface CallMetrics {
-    talkRatio: number // percentage 0-100 representing "Me"
-    wordsPerMinute: number
-    longestMonologue: string // formatted timestamp
-    longestMonologueSeconds: number
-    questionScore: number
-    openQuestions: number
-    closedQuestions: number
 }
 
 export interface Drill {
@@ -87,10 +94,7 @@ export interface CoachingSession {
     transcript: TranscriptLine[]
     summary: string
     improvements: FeedbackItem[]
-    timelineSegments: TimelineSegment[]
-    timelinePins: TimelinePin[]
-    insights: CoachingInsight[]
-    objections: Objection[]
+    // timeline segments, pins, insights and objections are derived from `transcript`
     metrics: CallMetrics
     drills: Drill[]
     progressHistory: ProgressPoint[]
@@ -166,98 +170,144 @@ export const mockCoachingSession: CoachingSession = {
             speaker: 'Me',
             text: "Good morning! Thank you for taking the time to meet with us today. I'm excited to show you how our platform can help streamline your sales operations.",
             timestamp: '00:00',
-            timestampSeconds: 0,
+            startSeconds: 0,
+            endSeconds: 14,
         },
         {
             speaker: 'Prospect',
             text: "Thanks for having us. We've been looking at several solutions and are curious to see what makes yours different.",
             timestamp: '00:15',
-            timestampSeconds: 15,
+            startSeconds: 15,
+            endSeconds: 27,
+            pin: { type: 'missed-opportunity', label: "Didn't probe competitor landscape" },
         },
         {
             speaker: 'Me',
             text: 'Absolutely. Before I dive in, could you tell me a bit more about your current challenges with your sales process?',
             timestamp: '00:28',
-            timestampSeconds: 28,
+            startSeconds: 28,
+            endSeconds: 41,
             highlightType: 'discovery',
+            insight: {
+                assessment:
+                    "You missed an opportunity to understand the competitive landscape when they mentioned 'several solutions'.",
+                tryThisInstead:
+                    "Before we dive in, I'm curious - you mentioned looking at several solutions. What's been the deciding factor in your evaluations so far?",
+            },
         },
         {
             speaker: 'Prospect',
             text: "Sure. Our main issues are around visibility into rep performance and the length of our sales cycles. We're currently averaging about 45 days to close.",
             timestamp: '00:42',
-            timestampSeconds: 42,
+            startSeconds: 42,
+            endSeconds: 64,
             highlightType: 'signal',
         },
         {
             speaker: 'Me',
             text: 'I understand completely. Many of our clients faced similar challenges before implementing our solution. Let me show you our analytics dashboard first...',
             timestamp: '01:05',
-            timestampSeconds: 65,
+            startSeconds: 65,
+            endSeconds: 81,
         },
         {
             speaker: 'Prospect',
             text: "That sounds great. We're particularly interested in the coaching features you mentioned in your email.",
             timestamp: '01:22',
-            timestampSeconds: 82,
+            startSeconds: 82,
+            endSeconds: 94,
             highlightType: 'signal',
         },
         {
             speaker: 'Me',
             text: "Perfect, I'll definitely cover that. Our AI-powered coaching module has helped teams reduce their sales cycle by an average of 23%. Now, let me walk you through the main interface and explain each component in detail so you can see exactly how this works in practice.",
             timestamp: '01:35',
-            timestampSeconds: 95,
+            startSeconds: 95,
+            endSeconds: 129,
+            insight: {
+                assessment: 'This turned into a long monologue. Check in with the prospect more frequently.',
+                tryThisInstead:
+                    'Our coaching module has helped teams reduce sales cycles by 23%. Before I show you more, does that metric resonate with your goals?',
+            },
+            pin: { type: 'weak-question', label: 'Long monologue without checking in' },
         },
         {
             speaker: 'Prospect',
             text: "That's impressive. How does the implementation process work? We have a team of about 50 sales reps and we're concerned about the timeline and budget for this project.",
             timestamp: '02:10',
-            timestampSeconds: 130,
+            startSeconds: 130,
+            endSeconds: 154,
             highlightType: 'objection',
+            objection: {
+                id: 'obj-1',
+                label: 'Timeline & Budget Concern',
+                quote: "We're concerned about the timeline and budget for this project.",
+            },
         },
         {
             speaker: 'Me',
             text: 'Great question about implementation. Our onboarding process is designed to be as smooth as possible. We typically have teams up and running within two weeks.',
             timestamp: '02:35',
-            timestampSeconds: 155,
+            startSeconds: 155,
+            endSeconds: 174,
+            insight: {
+                assessment:
+                    'Good job addressing the concern, but you could have asked clarifying questions about their specific timeline constraints.',
+                tryThisInstead:
+                    "That's an important consideration. Is there a specific deadline you're working toward, or an event driving your timeline?",
+            },
         },
         {
             speaker: 'Prospect',
             text: 'Two weeks sounds reasonable. What about integration with our existing CRM? We use Salesforce.',
             timestamp: '02:55',
-            timestampSeconds: 175,
+            startSeconds: 175,
+            endSeconds: 189,
         },
         {
             speaker: 'Me',
             text: "Salesforce integration is one of our core features. We have a native connector that syncs in real-time, so your reps don't need to change their workflow at all.",
             timestamp: '03:10',
-            timestampSeconds: 190,
+            startSeconds: 190,
+            endSeconds: 209,
         },
         {
             speaker: 'Prospect',
             text: "That's good to hear. I have to be honest though, we've had bad experiences with similar tools in the past. How do you ensure adoption?",
             timestamp: '03:30',
-            timestampSeconds: 210,
+            startSeconds: 210,
+            endSeconds: 231,
             highlightType: 'objection',
+            objection: {
+                id: 'obj-2',
+                label: 'Past Bad Experience',
+                quote: "We've had bad experiences with similar tools in the past.",
+            },
         },
         {
             speaker: 'Me',
             text: 'I appreciate your honesty. Adoption is crucial, and we take it very seriously. Our customer success team provides hands-on training and we have a gamification layer that encourages engagement.',
             timestamp: '03:52',
-            timestampSeconds: 232,
+            startSeconds: 232,
+            endSeconds: 254,
+            pin: { type: 'strong-pivot', label: 'Good recovery on adoption concern' },
         },
         {
             speaker: 'Prospect',
             text: 'Gamification could work well with our team. What kind of ROI have your customers typically seen?',
             timestamp: '04:15',
-            timestampSeconds: 255,
+            startSeconds: 255,
+            endSeconds: 271,
             highlightType: 'signal',
         },
         {
             speaker: 'Me',
             text: 'On average, our customers see a 30% improvement in win rates within the first quarter. Would you like me to share some case studies?',
             timestamp: '04:32',
-            timestampSeconds: 272,
+            startSeconds: 272,
+            endSeconds: 272,
             highlightType: 'next-steps',
+            pin: { type: 'strong-pivot', label: 'Strong close with case study offer' },
         },
     ],
     summary:
@@ -284,72 +334,7 @@ export const mockCoachingSession: CoachingSession = {
             advice: 'Excellent job maintaining conversational flow. Continue asking open-ended questions to keep the prospect engaged.',
         },
     ],
-    timelineSegments: [
-        { startSeconds: 0, endSeconds: 14, speaker: 'Me', topic: 'discovery' },
-        { startSeconds: 15, endSeconds: 27, speaker: 'Prospect' },
-        { startSeconds: 28, endSeconds: 41, speaker: 'Me', topic: 'discovery' },
-        { startSeconds: 42, endSeconds: 64, speaker: 'Prospect' },
-        { startSeconds: 65, endSeconds: 81, speaker: 'Me' },
-        { startSeconds: 82, endSeconds: 94, speaker: 'Prospect' },
-        { startSeconds: 95, endSeconds: 129, speaker: 'Me' },
-        { startSeconds: 130, endSeconds: 154, speaker: 'Prospect', topic: 'objection' },
-        { startSeconds: 155, endSeconds: 174, speaker: 'Me' },
-        { startSeconds: 175, endSeconds: 189, speaker: 'Prospect' },
-        { startSeconds: 190, endSeconds: 209, speaker: 'Me' },
-        { startSeconds: 210, endSeconds: 231, speaker: 'Prospect', topic: 'objection' },
-        { startSeconds: 232, endSeconds: 254, speaker: 'Me' },
-        { startSeconds: 255, endSeconds: 271, speaker: 'Prospect' },
-        { startSeconds: 272, endSeconds: 272, speaker: 'Me', topic: 'next-steps' },
-    ],
-    timelinePins: [
-        { timestampSeconds: 15, type: 'missed-opportunity', label: "Didn't probe competitor landscape" },
-        { timestampSeconds: 95, type: 'weak-question', label: 'Long monologue without checking in' },
-        { timestampSeconds: 232, type: 'strong-pivot', label: 'Good recovery on adoption concern' },
-        { timestampSeconds: 272, type: 'strong-pivot', label: 'Strong close with case study offer' },
-    ],
-    insights: [
-        {
-            timestampSeconds: 15,
-            endSeconds: 40,
-            whatYouSaid: 'Absolutely. Before I dive in, could you tell me a bit more about your current challenges...',
-            critique:
-                "You missed an opportunity to understand the competitive landscape when they mentioned 'several solutions'.",
-            tryThisInstead:
-                "Before we dive in, I'm curious - you mentioned looking at several solutions. What's been the deciding factor in your evaluations so far?",
-        },
-        {
-            timestampSeconds: 95,
-            endSeconds: 129,
-            whatYouSaid:
-                "Perfect, I'll definitely cover that. Our AI-powered coaching module has helped teams reduce their sales cycle by an average of 23%. Now, let me walk you through...",
-            critique: 'This turned into a long monologue. Check in with the prospect more frequently.',
-            tryThisInstead:
-                'Our coaching module has helped teams reduce sales cycles by 23%. Before I show you more, does that metric resonate with your goals?',
-        },
-        {
-            timestampSeconds: 130,
-            endSeconds: 154,
-            whatYouSaid: 'Great question about implementation...',
-            critique:
-                'Good job addressing the concern, but you could have asked clarifying questions about their specific timeline constraints.',
-            tryThisInstead:
-                "That's an important consideration. Is there a specific deadline you're working toward, or an event driving your timeline?",
-        },
-    ],
-    objections: [
-        {
-            id: 'obj-1',
-            timestampSeconds: 130,
-            label: 'Timeline & Budget Concern',
-            quote: "We're concerned about the timeline and budget for this project.",
-        },
-        {
-            id: 'obj-2',
-            timestampSeconds: 210,
-            label: 'Past Bad Experience',
-            quote: "We've had bad experiences with similar tools in the past.",
-        },
-    ],
+
     metrics: {
         talkRatio: 42,
         wordsPerMinute: 145,

@@ -195,9 +195,10 @@ export function GameTapePlayer({
                             const renderSegments =
                                 transcript && transcript.length
                                     ? transcript.map((line, idx) => {
-                                          const startSeconds = line.timestampSeconds
+                                          const startSeconds = line.startSeconds
                                           const endSeconds =
-                                              transcript[idx + 1]?.timestampSeconds ??
+                                              line.endSeconds ??
+                                              transcript[idx + 1]?.startSeconds ??
                                               Math.min(durationSeconds, startSeconds + 30)
                                           return {
                                               startSeconds,
