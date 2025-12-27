@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { HomeIcon } from 'lucide-react'
+import { HomeIcon, MessageSquare, Trash2 } from 'lucide-react'
 import {
     SidebarGroup,
     SidebarGroupContent,
@@ -14,6 +14,16 @@ export function NavMain() {
             title: 'Home',
             url: '/',
             icon: HomeIcon,
+        },
+        {
+            title: 'Conversations',
+            url: '/conversations',
+            icon: MessageSquare,
+        },
+        {
+            title: 'Deleted',
+            url: '/deleted',
+            icon: Trash2,
         },
     ]
 
