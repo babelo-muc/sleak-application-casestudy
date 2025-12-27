@@ -1,3 +1,5 @@
+import ConversationDashboard from "./ConversationDashboard";
+
 export default function ConversationsPage() {
-    return <div>ConversationsPage</div>
+    return <div><ConversationDashboard /></div>
 }
