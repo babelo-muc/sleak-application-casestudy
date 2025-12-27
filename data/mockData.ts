@@ -203,6 +203,28 @@ const generateMockRecordings = (): Recording[] => {
 
 export const mockRecordings: Recording[] = generateMockRecordings()
 
+// Simple in-memory trash for demo purposes
+export const mockDeletedRecordings: Recording[] = []
+
+export function moveRecordingToDeleted(recording: Recording) {
+    // ensure not duplicated
+    const exists = mockDeletedRecordings.find((r) => r.id === recording.id)
+    if (!exists) mockDeletedRecordings.unshift(recording)
+}
+
+export function restoreRecordingFromDeleted(id: string): Recording | null {
+    const idx = mockDeletedRecordings.findIndex((r) => r.id === id)
+    if (idx === -1) return null
+    const [rec] = mockDeletedRecordings.splice(idx, 1)
+    // restore to front of mockRecordings for demo
+    mockRecordings.unshift(rec)
+    return rec
+}
+
+export function deleteAllDeletedRecordings() {
+    mockDeletedRecordings.length = 0
+}
+
 export const mockCoachingSession: CoachingSession = {
     id: '1',
     title: 'Enterprise Demo - Acme Corp',

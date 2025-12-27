@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { type Recording, mockRecordings } from '@/data/mockData'
+import { type Recording, mockRecordings, moveRecordingToDeleted } from '@/data/mockData'
 import { Plus } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
@@ -13,6 +13,8 @@ export default function ConversationDashboard() {
     const { toast } = useToast()
 
     const handleDelete = (id: string) => {
+        const toDelete = recordings.find((r) => r.id === id)
+        if (toDelete) moveRecordingToDeleted(toDelete)
         setRecordings((prev) => prev.filter((r) => r.id !== id))
         toast({
             title: 'Recording moved to trash',
