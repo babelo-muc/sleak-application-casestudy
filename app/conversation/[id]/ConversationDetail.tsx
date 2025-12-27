@@ -30,7 +30,7 @@ export default function ConversationDetail() {
         startSeconds: number
         endSeconds: number
         assessment: string
-        tryThisInstead: string
+        tryThisInstead?: string
         text: string
     }>
 

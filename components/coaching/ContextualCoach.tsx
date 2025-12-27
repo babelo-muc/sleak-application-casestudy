@@ -58,31 +58,37 @@ export function ContextualCoach({ insights, objections, currentTime, onSeek }: C
                                     {/* Critique - compact */}
                                     <p className="text-muted-foreground text-xs">{currentInsight.assessment}</p>
 
-                                    {/* Try this instead - FOCAL POINT */}
-                                    <div className="bg-topic-next-steps/10 border-topic-next-steps/20 relative rounded-lg border p-3">
-                                        <div className="mb-1.5 flex items-center gap-1.5">
-                                            <Lightbulb className="text-topic-next-steps h-3.5 w-3.5" />
-                                            <span className="text-topic-next-steps text-xs font-semibold tracking-wide uppercase">
-                                                Try this
-                                            </span>
+                                    {/* Try this instead - FOCAL POINT (render only when available) */}
+                                    {currentInsight.tryThisInstead ? (
+                                        <div className="bg-topic-next-steps/10 border-topic-next-steps/20 relative rounded-lg border p-3">
+                                            <div className="mb-1.5 flex items-center gap-1.5">
+                                                <Lightbulb className="text-topic-next-steps h-3.5 w-3.5" />
+                                                <span className="text-topic-next-steps text-xs font-semibold tracking-wide uppercase">
+                                                    Try this
+                                                </span>
+                                            </div>
+                                            <p className="text-foreground pr-8 text-sm leading-relaxed font-medium">
+                                                "{currentInsight.tryThisInstead}"
+                                            </p>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="absolute top-2 right-2 h-6 w-6"
+                                                        onClick={() => copyToClipboard(currentInsight.tryThisInstead!)}
+                                                    >
+                                                        <Copy className="h-3 w-3" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>Copy to clipboard</TooltipContent>
+                                            </Tooltip>
                                         </div>
-                                        <p className="text-foreground pr-8 text-sm leading-relaxed font-medium">
-                                            "{currentInsight.tryThisInstead}"
-                                        </p>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="absolute top-2 right-2 h-6 w-6"
-                                                    onClick={() => copyToClipboard(currentInsight.tryThisInstead)}
-                                                >
-                                                    <Copy className="h-3 w-3" />
-                                                </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>Copy to clipboard</TooltipContent>
-                                        </Tooltip>
-                                    </div>
+                                    ) : (
+                                        <div className="bg-muted/10 border-muted/20 rounded-lg border p-3">
+                                            <p className="text-muted-foreground text-sm">No rewrite available.</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ) : (

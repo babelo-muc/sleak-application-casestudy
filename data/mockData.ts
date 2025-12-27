@@ -27,7 +27,7 @@ export interface TranscriptLine {
     insight?: {
         // assessment can be good/neutral/bad and replaces previous "critique"
         assessment: string
-        tryThisInstead: string
+        tryThisInstead?: string
     }
     objection?: {
         id: string
@@ -62,7 +62,7 @@ export interface CoachingInsight {
     startSeconds: number
     endSeconds: number
     assessment: string
-    tryThisInstead: string
+    tryThisInstead?: string
     text?: string
 }
 
