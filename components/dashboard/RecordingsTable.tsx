@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useRef, useEffect, useCallback } from 'react'
 import { redirect } from 'next/navigation'
 import { Recording } from '@/data/mockData'
 import { ArrowDown, ArrowUp, ArrowUpDown, Eye, FileAudio, Trash2 } from 'lucide-react'
@@ -193,6 +193,97 @@ export function RecordingsTable({ recordings, onDelete }: RecordingsTableProps) 
         setSelectedIds(newSelected)
     }
 
+    // Lasso selection state & refs
+    const containerRef = useRef<HTMLDivElement | null>(null)
+    const rowRefs = useRef<Map<string, HTMLTableRowElement>>(new Map())
+    const isSelectingRef = useRef(false)
+    const startPointRef = useRef<{ x: number; y: number } | null>(null)
+    const [selectionRect, setSelectionRect] = useState<null | { x: number; y: number; width: number; height: number }>(null)
+
+    // Lasso selection: start, move, end
+
+    const onPointerMoveRef = useRef<(ev: MouseEvent) => void>(() => {})
+    const onPointerUpRef = useRef<(ev: MouseEvent) => void>(() => {})
+
+    const onPointerMove = useCallback((ev: MouseEvent) => {
+        if (!isSelectingRef.current) return
+        const container = containerRef.current
+        const start = startPointRef.current
+        if (!container || !start) return
+        const rect = container.getBoundingClientRect()
+        const x = ev.clientX - rect.left
+        const y = ev.clientY - rect.top
+        const left = Math.min(start.x, x)
+        const top = Math.min(start.y, y)
+        const width = Math.abs(start.x - x)
+        const height = Math.abs(start.y - y)
+        const sel = { x: left, y: top, width, height }
+        setSelectionRect(sel)
+
+        const newlySelected: string[] = []
+        rowRefs.current.forEach((rowEl, id) => {
+            const r = rowEl.getBoundingClientRect()
+            const cRect = container.getBoundingClientRect()
+            const rowBounds = {
+                left: r.left - cRect.left,
+                top: r.top - cRect.top,
+                right: r.right - cRect.left,
+                bottom: r.bottom - cRect.top,
+            }
+            const intersects = !(rowBounds.left > sel.x + sel.width || rowBounds.right < sel.x || rowBounds.top > sel.y + sel.height || rowBounds.bottom < sel.y)
+            if (intersects) newlySelected.push(id)
+        })
+
+        setSelectedIds((prev) => {
+            if (ev.ctrlKey || ev.metaKey) {
+                const copy = new Set(prev)
+                newlySelected.forEach((id) => copy.add(id))
+                return copy
+            }
+            return new Set(newlySelected)
+        })
+    }, [])
+
+    const onPointerUp = useCallback((ev: MouseEvent) => {
+        if (!isSelectingRef.current) return
+        isSelectingRef.current = false
+        startPointRef.current = null
+        setSelectionRect(null)
+        window.removeEventListener('mousemove', onPointerMoveRef.current)
+        window.removeEventListener('mouseup', onPointerUpRef.current)
+    }, [])
+
+    useEffect(() => {
+        onPointerMoveRef.current = onPointerMove
+        onPointerUpRef.current = onPointerUp
+    }, [onPointerMove, onPointerUp])
+
+    const startSelection = (e: React.MouseEvent) => {
+        // only left button
+        if (e.button !== 0) return
+        const target = e.target as HTMLElement
+        // ignore clicks on inputs/buttons so normal interactions still work
+        if (target.closest('input') || target.closest('button') || target.closest('a')) return
+
+        const container = containerRef.current
+        if (!container) return
+        isSelectingRef.current = true
+        const rect = container.getBoundingClientRect()
+        const x = e.clientX - rect.left
+        const y = e.clientY - rect.top
+        startPointRef.current = { x, y }
+        setSelectionRect({ x, y, width: 0, height: 0 })
+        window.addEventListener('mousemove', onPointerMoveRef.current)
+        window.addEventListener('mouseup', onPointerUpRef.current)
+    }
+
+    useEffect(() => {
+        return () => {
+            window.removeEventListener('mousemove', onPointerMoveRef.current)
+            window.removeEventListener('mouseup', onPointerUpRef.current)
+        }
+    }, [])
+
     const getSortIcon = (field: SortField) => {
         if (sortField !== field) {
             return <ArrowUpDown className="ml-1 h-3 w-3" />
@@ -240,7 +331,22 @@ export function RecordingsTable({ recordings, onDelete }: RecordingsTableProps) 
             />
 
             {/* Table */}
-            <div className="border-border overflow-x-auto rounded-lg border">
+            <div ref={containerRef} onMouseDown={startSelection} className="relative border-border overflow-x-auto rounded-lg border">
+                {selectionRect && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            left: selectionRect.x,
+                            top: selectionRect.y,
+                            width: selectionRect.width,
+                            height: selectionRect.height,
+                            background: 'rgba(59,130,246,0.15)',
+                            border: '1px solid rgba(59,130,246,0.5)',
+                            pointerEvents: 'none',
+                            zIndex: 40,
+                        }}
+                    />
+                )}
                 <Table>
                     <TableHeader>
                         <TableRow className="border-border bg-muted/30 hover:bg-transparent">
@@ -305,6 +411,10 @@ export function RecordingsTable({ recordings, onDelete }: RecordingsTableProps) 
                         {paginatedRecordings.map((recording, index) => (
                             <TableRow
                                 key={recording.id}
+                                ref={(el: HTMLTableRowElement | null) => {
+                                    if (el) rowRefs.current.set(recording.id, el)
+                                    else rowRefs.current.delete(recording.id)
+                                }}
                                 className="border-border hover:bg-muted/50 transition-colors"
                                 style={{ animationDelay: `${index * 20}ms` }}
                             >
