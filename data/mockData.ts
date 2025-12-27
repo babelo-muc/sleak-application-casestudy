@@ -158,8 +158,8 @@ export const mockCoachingSession: CoachingSession = {
     id: '1',
     title: 'Enterprise Demo - Acme Corp',
     date: 'January 15, 2024',
-    duration: '32:45',
-    durationSeconds: 1965, // 32:45 in seconds
+    duration: '04:32',
+    durationSeconds: 272, // 04:32 in seconds
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
     transcript: [
         {
@@ -299,7 +299,7 @@ export const mockCoachingSession: CoachingSession = {
         { startSeconds: 210, endSeconds: 231, speaker: 'Prospect', topic: 'objection' },
         { startSeconds: 232, endSeconds: 254, speaker: 'Me' },
         { startSeconds: 255, endSeconds: 271, speaker: 'Prospect' },
-        { startSeconds: 272, endSeconds: 290, speaker: 'Me', topic: 'next-steps' },
+        { startSeconds: 272, endSeconds: 272, speaker: 'Me', topic: 'next-steps' },
     ],
     timelinePins: [
         { timestampSeconds: 15, type: 'missed-opportunity', label: "Didn't probe competitor landscape" },
