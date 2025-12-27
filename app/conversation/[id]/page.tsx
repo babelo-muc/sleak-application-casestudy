@@ -1,5 +1,5 @@
-import ConversationDashboard from "@/app/conversations/ConversationDashboard";
+import ConversationDetail from "./ConversationDetail";
 
 export default function ConversationsPage() {
-    return <div><ConversationDashboard /></div>
+    return <div><ConversationDetail /></div>
 }
