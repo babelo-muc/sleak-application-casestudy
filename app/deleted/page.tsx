@@ -49,9 +49,13 @@ export default function DeletedPage() {
                         <Link href="/conversations">
                             <Button variant="ghost">Back to Conversations</Button>
                         </Link>
-                        <Button variant="destructive" onClick={handleDeleteAll}>
+                        <Button
+                            variant="outline"
+                            onClick={handleDeleteAll}
+                            className="border-destructive text-destructive hover:bg-destructive/5"
+                        >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            Delete Everything
+                            Clear Deleted Recording (can't be undone)
                         </Button>
                     </div>
                 </div>
