@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { redirect } from 'next/navigation'
 import { Recording } from '@/data/mockData'
 import { ArrowDown, ArrowUp, ArrowUpDown, Eye, FileAudio, Trash2 } from 'lucide-react'
@@ -198,7 +198,9 @@ export function RecordingsTable({ recordings, onDelete }: RecordingsTableProps) 
     const rowRefs = useRef<Map<string, HTMLTableRowElement>>(new Map())
     const isSelectingRef = useRef(false)
     const startPointRef = useRef<{ x: number; y: number } | null>(null)
-    const [selectionRect, setSelectionRect] = useState<null | { x: number; y: number; width: number; height: number }>(null)
+    const [selectionRect, setSelectionRect] = useState<null | { x: number; y: number; width: number; height: number }>(
+        null,
+    )
 
     // Lasso selection: start, move, end
 
@@ -230,7 +232,12 @@ export function RecordingsTable({ recordings, onDelete }: RecordingsTableProps) 
                 right: r.right - cRect.left,
                 bottom: r.bottom - cRect.top,
             }
-            const intersects = !(rowBounds.left > sel.x + sel.width || rowBounds.right < sel.x || rowBounds.top > sel.y + sel.height || rowBounds.bottom < sel.y)
+            const intersects = !(
+                rowBounds.left > sel.x + sel.width ||
+                rowBounds.right < sel.x ||
+                rowBounds.top > sel.y + sel.height ||
+                rowBounds.bottom < sel.y
+            )
             if (intersects) newlySelected.push(id)
         })
 
@@ -331,7 +338,11 @@ export function RecordingsTable({ recordings, onDelete }: RecordingsTableProps) 
             />
 
             {/* Table */}
-            <div ref={containerRef} onMouseDown={startSelection} className="relative border-border overflow-x-auto rounded-lg border">
+            <div
+                ref={containerRef}
+                onMouseDown={startSelection}
+                className="border-border relative overflow-x-auto rounded-lg border"
+            >
                 {selectionRect && (
                     <div
                         style={{
