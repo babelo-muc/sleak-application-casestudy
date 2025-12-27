@@ -20,20 +20,20 @@ export default function ConversationDashboard() {
         })
     }
 
-    const handleUploadComplete = () => {
+    const handleUploadComplete = (meta?: { name: string; duration: string }) => {
         const newRecording: Recording = {
             id: Date.now().toString(),
-            name: 'New Recording - ' + new Date().toLocaleDateString(),
+            name: meta?.name ?? 'New Recording - ' + new Date().toLocaleDateString(),
             date: new Date().toISOString().split('T')[0],
             status: 'processing',
-            duration: '00:00',
+            duration: meta?.duration ?? '00:00',
             owner: { id: '1', name: 'Sarah Johnson' },
             callType: 'Outbound',
         }
         setRecordings((prev) => [newRecording, ...prev])
         toast({
             title: 'Upload successful',
-            description: 'Your recording is now being processed.',
+            description: `${newRecording.name} is now being processed.`,
         })
     }
 

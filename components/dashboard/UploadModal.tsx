@@ -4,10 +4,15 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Progress } from '@/components/ui/progress'
 
+interface UploadMeta {
+    name: string
+    duration: string
+}
+
 interface UploadModalProps {
     open: boolean
     onOpenChange: (open: boolean) => void
-    onUploadComplete: () => void
+    onUploadComplete: (meta: UploadMeta) => void
 }
 
 export function UploadModal({ open, onOpenChange, onUploadComplete }: UploadModalProps) {
@@ -40,9 +45,29 @@ export function UploadModal({ open, onOpenChange, onUploadComplete }: UploadModa
         setIsUploading(true)
         setProgress(0)
 
-        // Simulate sequential upload for each file
+        // Upload each file sequentially, extracting duration from the file
+        const getDuration = (file: File) =>
+            new Promise<number>((resolve) => {
+                const url = URL.createObjectURL(file)
+                const audio = new Audio()
+                audio.preload = 'metadata'
+                audio.src = url
+                const clean = () => {
+                    URL.revokeObjectURL(url)
+                }
+                const onLoaded = () => {
+                    const d = isFinite(audio.duration) ? audio.duration : 0
+                    audio.removeEventListener('loadedmetadata', onLoaded)
+                    clean()
+                    resolve(d)
+                }
+                audio.addEventListener('loadedmetadata', onLoaded)
+            })
+
         for (let i = 0; i < files.length; i++) {
-            // simulate per-file upload time
+            const file = files[i]
+
+            // simulate per-file upload progress steps
             const steps = 5
             for (let s = 1; s <= steps; s++) {
                 await new Promise((r) => setTimeout(r, 150))
@@ -50,8 +75,19 @@ export function UploadModal({ open, onOpenChange, onUploadComplete }: UploadModa
                 setProgress(overall)
             }
 
-            // call onUploadComplete for each uploaded file so parent can add recordings
-            onUploadComplete()
+            // get actual duration from file
+            let durationSeconds = 0
+            try {
+                durationSeconds = await getDuration(file)
+            } catch (e) {
+                durationSeconds = 0
+            }
+            const mins = Math.floor(durationSeconds / 60)
+            const secs = Math.round(durationSeconds % 60)
+            const duration = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+
+            // notify parent with filename + duration
+            onUploadComplete({ name: file.name, duration })
         }
 
         // finalize
@@ -66,7 +102,7 @@ export function UploadModal({ open, onOpenChange, onUploadComplete }: UploadModa
 
     const handleClose = () => {
         if (!isUploading) {
-            setFile(null)
+            setFiles([])
             setProgress(0)
             onOpenChange(false)
         }
